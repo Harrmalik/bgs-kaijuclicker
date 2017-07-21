@@ -1,9 +1,11 @@
 import React from 'react'
 import moment from 'moment'
+import Datetime from 'react-datetime'
 import HTML5Backend from 'react-dnd-html5-backend'
 import { DragDropContext } from 'react-dnd'
 import BigCalendar from 'react-big-calendar'
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
+import Event from '../components/Event.js'
 
 // import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 BigCalendar.momentLocalizer(moment);
@@ -17,6 +19,7 @@ class HomePage extends React.Component {
           events: []
       }
 
+      this.addEvent = this.addEvent.bind(this)
       this.moveEvent = this.moveEvent.bind(this)
     }
 
@@ -30,6 +33,10 @@ class HomePage extends React.Component {
         }]
 
         this.setState({ events })
+    }
+
+    addEvent(newEvent) {
+        this.setState({events: [...this.state.events, newEvent]})
     }
 
     moveEvent({ event, start, end }) {
@@ -48,42 +55,18 @@ class HomePage extends React.Component {
       alert(`${event.title} was dropped onto ${event.start}`);
     }
 
-    showModal() {
+    toggleModal() {
         $('.ui.modal')
-          .modal('show')
+          .modal('toggle')
         ;
     }
 
     render(){
       return (
         <div>
-            <div className="ui button blue"><i className="plus icon"></i> Add Event</div>
+            <div className="ui button blue" onClick={this.toggleModal}><i className="plus icon"></i> Add Event</div>
 
-            <div className="ui modal">
-              <div className="header">Header</div>
-              <div className="content">
-              <form className="ui form">
-                <div className="field">
-                  <label>Event</label>
-                  <input type="text" name="title" placeholder="Name - Extension"></input>
-                </div>
-                <div className="field">
-                  <label>Last Name</label>
-                  <input type="text" name="last-name" placeholder="Last Name"></input>
-                </div>
-                <div className="field">
-                  <div className="ui checkbox">
-                    <input type="checkbox" tabindex="0" className="hidden"></input>
-                    <label>I agree to the Terms and Conditions</label>
-                  </div>
-                </div>
-                </form>
-              </div>
-              <div className="actions">
-                <div className="ui blue button">Save</div>
-                <div className="ui basic button">Cancel</div>
-              </div>
-            </div>
+            <Event event={this.state.event} callback={this.addEvent}></Event>
 
             <DragAndDropCalendar
                 selectable
@@ -92,11 +75,19 @@ class HomePage extends React.Component {
                 defaultView='week'
                 views = {['week']}
                 titleAccesor= 'title'
-                onSelectEvent={event => alert(event.title)}
-                onSelectSlot={(slotInfo) => alert(
-                `selected slot: \n\nstart ${slotInfo.start.toLocaleString()} ` +
-                `\nend: ${slotInfo.end.toLocaleString()}`
-                )}
+                onSelectEvent={event => {
+                    $('#title').val(event.title)
+                    $('.ui.modal')
+                      .modal('toggle')
+                    ;}}
+                onSelectSlot={(slotInfo) => {
+                    $('#title').val('')
+                    $($($('.rdt')[0]).children()[0]).val(slotInfo.start)
+                    $($($('.rdt')[1]).children()[0]).val(slotInfo.start)
+                    $('.ui.modal')
+                      .modal('toggle')
+                    ;
+                }}
                 />
         </div>
       )
